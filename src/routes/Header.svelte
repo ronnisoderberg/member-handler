@@ -1,6 +1,6 @@
 <script>
 	import { page } from "$app/stores";
-	import logo from "$lib/images/svelte-logo.png";
+	import logo from "$lib/images/hkk.png";
 	import github from "$lib/images/github.svg";
 </script>
 
