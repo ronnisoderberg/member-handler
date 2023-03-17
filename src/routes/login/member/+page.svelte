@@ -7,16 +7,48 @@
     const annualFee = writable(false);
     const memberID = writable(null);
 
+    function personnummerLogik(nummer) {
+        let nrString = nummer.toString();
+        nrString = nrString.replace("-", "");
+        let fyraSista = nrString.slice(-4);
+
+        if (nrString.length != 6 && 8) {
+            let fodelseNR = nrString.slice(0, nrString.length - 4).toString();
+
+            if (fodelseNR.length === 8) {
+                fodelseNR = fodelseNR.replace(
+                    /(\d{4})(\d{2})(\d{2})/,
+                    "$1-$2-$3"
+                );
+                console.log(
+                    "🚀 ~ file: +page.svelte:21 ~ personnummerLogik ~ fodelseNR:",
+                    fodelseNR
+                );
+            } else {
+                //TODO
+                // Den ger mit rätt formatering med bindessträck när det är 6 siffor. ex input 121212 out 12-12-12.
+                // Nu ska jag bara lägga till 19 eller 20 framför. i denna else satsen
+                fodelseNR = fodelseNR.replace(
+                    /(\d{2})(\d{2})(\d{2})/,
+                    "$1-$2-$3"
+                );
+                console.log(
+                    "🚀 ~ file: +page.svelte:26 ~ personnummerLogik ~ fodelseNR:",
+                    fodelseNR
+                );
+                debugger;
+            }
+        } else {
+            input = null;
+            return;
+        }
+    }
+
     async function memberSearch() {
-        debugger;
+        personnummerLogik(input);
         const apiRespons = writable("rndomdtext");
         const memberShips = writable([]);
         memberID.set(input);
-
-        console.log(
-            "🚀 ~ file: +page.svelte:28 ~ memberSearch ~ input:",
-            get(memberID)
-        );
         const inputElement = document.querySelector("[name='medlems id']");
         inputElement.value = "";
 
@@ -158,13 +190,18 @@
         annualFee : {$annualFee}<br />
         <br /> -->
     <div>
+        <label
+            for="large-input"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >Personnummer</label
+        >
+
         <input
-            placeholder="personnummer"
             name="medlems id"
             bind:value={input}
             type="memberID"
-            id="default-input"
-            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            id="large-input"
+            class="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         />
     </div>
     <!-- <input
