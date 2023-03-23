@@ -1,56 +1,27 @@
 <script>
   import { writable, get } from "svelte/store";
-
+  import { personnummerLogik } from "$lib/personHandler";
   let input = null;
   const userFound = writable(false);
   const activeMemberShip = writable(false);
   const annualFee = writable(false);
   const memberID = writable(null);
-
-  function personnummerLogik(nummer) {
-    let nrString = nummer.toString();
-    nrString = nrString.replace("-", "");
-    let fyraSista = nrString.slice(-4);
-
-    if (nrString.length != 6 && 8) {
-      let fodelseNR = nrString.slice(0, nrString.length - 4).toString();
-
-      if (fodelseNR.length === 8) {
-        input = fodelseNR + fyraSista;
-        return;
-      } else if (fodelseNR.length === 6) {
-        fodelseNR = fodelseNR.replace(/(\d{2})(\d{2})(\d{2})/, "$1-$2-$3");
-        let thisYearFirsttwoLetters = new Date()
-          .getFullYear()
-          .toString()
-          .slice(0, 2);
-
-        if (Date.parse(thisYearFirsttwoLetters + fodelseNR) > Date.now()) {
-          let datumEttSekelTidigare = (new Date().getFullYear() - 100)
-            .toString()
-            .slice(0, 2);
-          input = (datumEttSekelTidigare + fodelseNR).replaceAll("-", "");
-        } else {
-          input = (thisYearFirsttwoLetters + fodelseNR).replaceAll("-", "");
-          return;
-        }
-      }
-    } else {
-      input = null;
-      return;
-    }
-  }
+  const memberName = writable(null);
+  const membershipDates = writable(null);
 
   async function memberSearch() {
-    personnummerLogik(input);
-    const apiRespons = writable("rndomdtext");
+    const apiRespons = writable("");
     const memberShips = writable([]);
     memberID.set(input);
     const inputElement = document.querySelector("[name='medlems id']");
     inputElement.value = "";
 
     const res = await fetch(
-      `http://localhost:1337/api/members/${get(memberID)}?populate=*`,
+      // `http://localhost:1337/api/members/${get(memberID)}?populate=*`,
+      `http://localhost:1337/api/members?filters[personNummer][$eq]=${get(
+        memberID
+      )}&populate=*`,
+
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("jwt")}`,
@@ -60,10 +31,36 @@
 
     apiRespons.set(await res.json());
     input = null;
-    if (get(apiRespons).data !== null) {
-      annualFee.set(get(apiRespons).data.attributes.annualFee);
-      memberShips.set(get(apiRespons).data.attributes.memberships.data);
 
+    if (get(apiRespons).data.length !== 0) {
+      userFound.set(true);
+
+      memberShips.set(
+        get(apiRespons).data[0].attributes.memberships.data[0] != null
+      );
+
+      memberName.set(
+        get(apiRespons).data[0].attributes.name +
+          " " +
+          get(apiRespons).data[0].attributes.lastName
+      );
+      if (get(apiRespons).data[0].attributes.annual_fee.data != null) {
+        annualFee.set(true);
+      } else {
+        annualFee.set(false);
+      }
+
+      if (get(apiRespons).data[0].attributes.memberships.data.length !== 0) {
+        membershipDates.set(
+          get(apiRespons).data[0].attributes.memberships.data[0].attributes
+            .startDate +
+            " - " +
+            get(apiRespons).data[0].attributes.memberships.data[0].attributes
+              .stopDate
+        );
+      }
+
+      memberShips.set(get(apiRespons).data[0].attributes.memberships.data);
       await get(memberShips).forEach((element) => {
         const startDate = Date.parse(element.attributes.startDate);
         const stopDate = Date.parse(element.attributes.stopDate);
@@ -74,18 +71,20 @@
           stopDate >= today &&
           get(annualFee) === true
         ) {
-          console.log("🚀 ~ ja det är aktivt", get(memberID));
           activeMemberShip.set(true);
         } else {
-          console.log("🚀 ~ nej kortet är inte aktivt");
           activeMemberShip.set(false);
         }
-        userFound.set(true);
-        input = null;
       });
     } else {
       userFound.set(false);
       annualFee.set(false);
+    }
+  }
+
+  function handleKeyPress(e) {
+    if (e.charCode === 13) {
+      memberSearch();
     }
   }
 </script>
@@ -107,7 +106,9 @@
       >
         <div>
           <p class="font-bold">Allt gick bra!</p>
-          <p>Välkommen in.</p>
+          <p>
+            Välkommen in {$memberName}. Ditt medlemskap gäller för perioden {$membershipDates}
+          </p>
         </div>
         <div class="relative md:absolute  bottom-0 right-0">
           <svg
@@ -180,12 +181,12 @@
     {/if}
   </div>
 
-  <!-- <br />
-        active memmersship : {$activeMemberShip} <br />
-        memberID : {$memberID} <br />
-        userfound : {$userFound}<br />
-        annualFee : {$annualFee}<br />
-        <br /> -->
+  <br />
+  active memmersship : {$activeMemberShip} <br />
+  memberID : {$memberID} <br />
+  userfound : {$userFound}<br />
+  annualFee : {$annualFee}<br />
+  <br />
   <div>
     <label
       for="large-input"
@@ -195,18 +196,14 @@
 
     <input
       name="medlems id"
+      on:keypress={handleKeyPress}
       bind:value={input}
       type="memberID"
       id="large-input"
       class="block w-full p-4 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 sm:text-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
     />
   </div>
-  <!-- <input
-        type="memberID"
-        bind:value={input}
-        name="medlems id"
-        placeholder="medlems id"
-    /> -->
+
   <div class="pt-20 flex flex-col items-center">
     <div>
       <button
