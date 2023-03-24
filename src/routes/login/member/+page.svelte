@@ -210,7 +210,7 @@
         on:click={memberSearch}
         class="bg-blue-500 text-white font-sans py-20 px-96 rounded "
       >
-        Sök
+        <p class="text-9xl">Sök</p>
       </button>
     </div>
   </div>
