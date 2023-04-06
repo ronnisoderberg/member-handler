@@ -12,8 +12,12 @@
   async function memberSearch() {
     const apiRespons = writable("");
     const memberShips = writable([]);
+    input = personnummerLogik(input);
     memberID.set(input);
-    const inputElement = document.querySelector("[name='medlems id']");
+
+    console.log("🚀 ~ file: +page.svelte:18 ~ memberSearch ~ input:", input);
+
+    const inputElement = document.querySelector("[name='personnummer']");
     inputElement.value = "";
 
     const res = await fetch(
@@ -91,7 +95,7 @@
 
 <div class="flex flex-col">
   <div class="pb-10">
-    {#if $memberID === null || ($memberID.trim() === "" && $annualFee === false && $userFound === false && $activeMemberShip === false)}
+    {#if $memberID === null || ($memberID === "" && $annualFee === false && $userFound === false && $activeMemberShip === false)}
       <div
         class="bg-slate-100 border-l-4 border-slate-500 text-slate-700 p-6 relative"
       >
@@ -195,7 +199,7 @@
     >
 
     <input
-      name="medlems id"
+      name="personnummer"
       on:keypress={handleKeyPress}
       bind:value={input}
       type="memberID"
