@@ -8,13 +8,17 @@
   const memberID = writable(null);
   const memberName = writable(null);
   const membershipDates = writable(null);
+  debugger;
 
+
+
+  
   async function memberSearch() {
     const apiRespons = writable("");
     const memberShips = writable([]);
     input = personnummerLogik(input);
     memberID.set(input);
-
+    debugger
     console.log("🚀 ~ file: +page.svelte:18 ~ memberSearch ~ input:", input);
 
     const inputElement = document.querySelector("[name='personnummer']");
@@ -25,6 +29,7 @@
       `http://localhost:1337/api/members?filters[personNummer][$eq]=${get(
         memberID
       )}&populate=*`,
+  
 
       {
         headers: {
@@ -32,7 +37,7 @@
         },
       }
     );
-
+      
     apiRespons.set(await res.json());
     input = null;
 

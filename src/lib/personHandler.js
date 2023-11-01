@@ -5,6 +5,7 @@ export function personnummerLogik(nummer) {
   let fyraSista = nrString.slice(-4);
 
   if (nrString.length != 6 && 8) {
+    debugger;
     let fodelseNR = nrString.slice(0, nrString.length - 4).toString();
 
     if (fodelseNR.length === 8) {
